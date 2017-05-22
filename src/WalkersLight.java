@@ -1,7 +1,5 @@
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.JPanel;
 
@@ -12,9 +10,7 @@ import javax.swing.JPanel;
 /**
  * @author �����
  */
-enum WalkersLightEvent {
-    TurnRed, TurnGreen, ShabatMode, RegularMode
-}
+
 
 class WalkersLight extends Thread {
     Event64 externelEventListener = new Event64(), eventListener = new Event64();
@@ -38,7 +34,7 @@ class WalkersLight extends Thread {
                     while (externelEventListener.waitEvent() != WalkersLightEvent.RegularMode) ;
                     break;
                 case RegularMode:
-                    regulerMode(new ArrayList<>(Arrays.asList(WalkersLightEvent.ShabatMode)));
+                    regularMode(new ArrayList<>(Arrays.asList(WalkersLightEvent.ShabatMode)));
                     while (externelEventListener.waitEvent() != WalkersLightEvent.ShabatMode) ;
                     break;
             }
@@ -46,7 +42,7 @@ class WalkersLight extends Thread {
 
     }
 
-    void regulerMode(List<WalkersLightEvent> exitEvents) {
+    void regularMode(List<WalkersLightEvent> exitEvents) {
         RegulerModeState currentState = RegulerModeState.Red;
         WalkersLightEvent event = null;
         do {
@@ -55,17 +51,26 @@ class WalkersLight extends Thread {
                     event = (WalkersLightEvent) eventListener.waitEvent();
                     if (event == WalkersLightEvent.TurnGreen) {
                         currentState = RegulerModeState.Temp;
+                        Timer timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                sendEvent(WalkersLightEvent.TempTimeout);
+                            }
+                        }, 1000);
                     }
                     break;
                 case Temp:
-                    try {
-                        sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    event = (WalkersLightEvent) eventListener.waitEvent();
+                    switch (event) {
+                        case TempTimeout:
+                            setLight(1, Color.LIGHT_GRAY);
+                            setLight(2, Color.GREEN);
+                            currentState = RegulerModeState.Green;
+                            break;
+                        case TurnRed:
+                            currentState = RegulerModeState.Red;
                     }
-                    setLight(1, Color.LIGHT_GRAY);
-                    setLight(2, Color.GREEN);
-                    currentState = RegulerModeState.Green;
                     break;
                 case Green:
                     event = (WalkersLightEvent) eventListener.waitEvent();
