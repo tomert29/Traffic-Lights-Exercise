@@ -12,9 +12,6 @@ import javax.swing.JPanel;
  * @author �����
  */
 
-enum CarsEvent {
-    ShabatMode, RegulerMode, TurnGreen, TurnRed
-}
 
 public class CarsLight extends Thread {
     StreetLight streetLight;
