@@ -78,7 +78,7 @@ public class CarMooving extends Thread {
         myLabel.setBounds(x, y, imageIcon.getIconWidth(), imageIcon.getIconHeight());
 
         while (!finish()) {
-            if (myRamzor.isStop() && toStop())
+            if (myRamzor.shouldCarsStop() && toStop())
                 ;
             else {
                 x += dx;

@@ -12,7 +12,6 @@ import javax.swing.JPanel;
 class BlinkingLight extends Thread {
     StreetLight streetLight;
     JPanel panel;
-
     public BlinkingLight(StreetLight streetLight, JPanel panel) {
         this.streetLight = streetLight;
         this.panel = panel;
@@ -20,14 +19,26 @@ class BlinkingLight extends Thread {
     }
 
     public void run() {
-        try {
-            while (true) {
-                sleep(1000);
-                setLight(1, Color.GRAY);
-                sleep(1000);
-                setLight(1, Color.YELLOW);
+        State state = State.Gray;
+        while (true) {
+            switch (state) {
+                case Gray:
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    setLight(1, Color.ORANGE);
+                    break;
+                case Orange:
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    setLight(1, Color.GRAY);
+                    break;
             }
-        } catch (InterruptedException e) {
         }
 
     }
@@ -36,4 +47,6 @@ class BlinkingLight extends Thread {
         streetLight.colorLight[place - 1] = color;
         panel.repaint();
     }
+
+    enum State {Orange, Gray}
 }

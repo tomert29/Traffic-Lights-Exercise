@@ -25,7 +25,7 @@ public class CarsMaker extends Thread {
         try {
             while (true) {
                 sleep(300);
-                if (!myRamzor.isStop()) {
+                if (!myRamzor.shouldCarsStop()) {
                     new CarMooving(myPanel, myRamzor, key);
                 }
 

@@ -34,24 +34,24 @@ class WalkersLight extends Thread {
                     while (externelEventListener.waitEvent() != WalkersLightEvent.RegularMode) ;
                     break;
                 case RegularMode:
-                    regularMode(new ArrayList<>(Arrays.asList(WalkersLightEvent.ShabatMode)));
-                    while (externelEventListener.waitEvent() != WalkersLightEvent.ShabatMode) ;
+                    regularMode(Arrays.asList(WalkersLightEvent.ShabatMode));
+                    externalState = ExternalState.ShabatMode;
                     break;
             }
         }
 
     }
 
-    void regularMode(List<WalkersLightEvent> exitEvents) {
+    WalkersLightEvent regularMode(List<WalkersLightEvent> exitEvents) {
         RegulerModeState currentState = RegulerModeState.Red;
         WalkersLightEvent event = null;
+        Timer timer = new Timer();
         do {
             switch (currentState) {
                 case Red:
                     event = (WalkersLightEvent) eventListener.waitEvent();
                     if (event == WalkersLightEvent.TurnGreen) {
                         currentState = RegulerModeState.Temp;
-                        Timer timer = new Timer();
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
@@ -82,6 +82,7 @@ class WalkersLight extends Thread {
                     break;
             }
         } while (!exitEvents.contains(event));
+        return event;
     }
 
     public void sendEvent(WalkersLightEvent event) {
