@@ -1,37 +1,41 @@
-import java.util.Arrays;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
- * Created by User on 22-May-17.
+ * Created by Ezra Steinmetz and Tomer Trabelsky on 22-May-17.
  */
 public class MainStatechart extends Thread {
 
-    CarsLight YeminAvotLight, KanfeiNesharimLight, KNSideLight, FarbsteinLight;
+    final long DELAY = 10000;
     List<WalkersLight> independentLights;
-    Event64 eventReciver;
+    Event64 eventReciver = new Event64();
+    private CarsLight YeminAvotLight, KanfeiNesharimLight, KNSideLight, FarbsteinLight;
 
-    public MainStatechart(CarsLight yeminAvotLight, CarsLight kanfeiNesharimLight, CarsLight farbsteinLight, List<WalkersLight> independentLights) {
+    public MainStatechart(CarsLight yeminAvotLight, CarsLight farbsteinLight, CarsLight KNSideLight, CarsLight kanfeiNesharimLight, List<WalkersLight> independentLights) {
+        super("Main statechart");
         YeminAvotLight = yeminAvotLight;
         KanfeiNesharimLight = kanfeiNesharimLight;
         FarbsteinLight = farbsteinLight;
         this.independentLights = independentLights;
-        YeminAvotLight.run();
-        KanfeiNesharimLight.run();
-        FarbsteinLight.run();
-        for (WalkersLight WL : independentLights) {
-            WL.run();
-        }
+        this.KNSideLight = KNSideLight;
+
     }
 
     public void run() {
-        ExternalState state = ExternalState.ShabatMode;
+        System.out.println("Main statechart started");
+        YeminAvotLight.start();
+        KanfeiNesharimLight.start();
+        FarbsteinLight.start();
+        KNSideLight.start();
+        for (WalkersLight WL : independentLights) {
+            WL.start();
+        }
+        ExternalState state = ExternalState.RegularMode;
         MainSCEvent event = null;
+        //noinspection InfiniteLoopStatement
         while (true) {
             switch (state) {
                 case RegularMode:
-                    event = runRegularMode(Arrays.asList(MainSCEvent.ShabatButtonPress));
+                    event = runRegularMode(Collections.singletonList(MainSCEvent.ShabatButtonPress));
                     if (event == MainSCEvent.ShabatButtonPress) {
                         YeminAvotLight.sendEvent(CarsEvent.ShabatMode);
                         KanfeiNesharimLight.sendEvent(CarsEvent.ShabatMode);
@@ -59,6 +63,7 @@ public class MainStatechart extends Thread {
     }
 
     public void sendEvent(MainSCEvent event) {
+        System.out.println("Event run" + event.toString());
         eventReciver.sendEvent(event);
     }
 
@@ -71,7 +76,7 @@ public class MainStatechart extends Thread {
             public void run() {
                 sendEvent(MainSCEvent.KNTimeout);
             }
-        }, 30000);
+        }, DELAY);
         do {
             switch (state) {
                 case KanfeiNesharim:
@@ -82,7 +87,7 @@ public class MainStatechart extends Thread {
                             public void run() {
                                 sendEvent(MainSCEvent.YATimeout);
                             }
-                        }, 30000);
+                        }, DELAY);
                         YeminAvotLight.sendEvent(CarsEvent.TurnGreen);
                         KanfeiNesharimLight.sendEvent(CarsEvent.TurnRed);
                         KNSideLight.sendEvent(CarsEvent.TurnRed);
@@ -100,7 +105,7 @@ public class MainStatechart extends Thread {
                             public void run() {
                                 sendEvent(MainSCEvent.FTimeout);
                             }
-                        }, 30000);
+                        }, DELAY);
                         YeminAvotLight.sendEvent(CarsEvent.TurnRed);
                         KNSideLight.sendEvent(CarsEvent.TurnGreen);
                         FarbsteinLight.sendEvent(CarsEvent.TurnGreen);
@@ -115,7 +120,7 @@ public class MainStatechart extends Thread {
                             public void run() {
                                 sendEvent(MainSCEvent.KNTimeout);
                             }
-                        }, 30000);
+                        }, DELAY);
                         FarbsteinLight.sendEvent(CarsEvent.TurnRed);
                         KanfeiNesharimLight.sendEvent(CarsEvent.TurnGreen);
                         for (WalkersLight WL : independentLights) {

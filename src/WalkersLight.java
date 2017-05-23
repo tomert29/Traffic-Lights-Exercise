@@ -13,7 +13,7 @@ import javax.swing.JPanel;
 
 
 class WalkersLight extends Thread {
-    Event64 externelEventListener = new Event64(), eventListener = new Event64();
+    Event64 eventReciver = new Event64();
     WalkersLight.ExternalState externalState;
     StreetLight streetLight;
     JPanel panel;
@@ -21,20 +21,19 @@ class WalkersLight extends Thread {
     public WalkersLight(StreetLight streetLight, JPanel panel) {
         this.streetLight = streetLight;
         this.panel = panel;
-        start();
     }
 
     public void run() {
         externalState = ExternalState.RegularMode;
+        //noinspection InfiniteLoopStatement
         while (true) {
             switch (externalState) {
                 case ShabatMode:
-                    setLight(1, Color.GRAY);
-                    setLight(2, Color.GRAY);
-                    while (externelEventListener.waitEvent() != WalkersLightEvent.RegularMode) ;
+                    setLight(LightMode.Blank);
+                    while (eventReciver.waitEvent() != WalkersLightEvent.RegularMode) ;
                     break;
                 case RegularMode:
-                    regularMode(Arrays.asList(WalkersLightEvent.ShabatMode));
+                    runRegularMode(Collections.singletonList(WalkersLightEvent.ShabatMode));
                     externalState = ExternalState.ShabatMode;
                     break;
             }
@@ -42,16 +41,17 @@ class WalkersLight extends Thread {
 
     }
 
-    WalkersLightEvent regularMode(List<WalkersLightEvent> exitEvents) {
-        RegulerModeState currentState = RegulerModeState.Red;
+    WalkersLightEvent runRegularMode(List<WalkersLightEvent> exitEvents) {
+        setLight(LightMode.Red);
+        RegularModeState currentState = RegularModeState.Red;
         WalkersLightEvent event = null;
         Timer timer = new Timer();
         do {
             switch (currentState) {
                 case Red:
-                    event = (WalkersLightEvent) eventListener.waitEvent();
+                    event = (WalkersLightEvent) eventReciver.waitEvent();
                     if (event == WalkersLightEvent.TurnGreen) {
-                        currentState = RegulerModeState.Temp;
+                        currentState = RegularModeState.Temp;
                         timer.schedule(new TimerTask() {
                             @Override
                             public void run() {
@@ -61,23 +61,21 @@ class WalkersLight extends Thread {
                     }
                     break;
                 case Temp:
-                    event = (WalkersLightEvent) eventListener.waitEvent();
+                    event = (WalkersLightEvent) eventReciver.waitEvent();
                     switch (event) {
                         case TempTimeout:
-                            setLight(1, Color.LIGHT_GRAY);
-                            setLight(2, Color.GREEN);
-                            currentState = RegulerModeState.Green;
+                            setLight(LightMode.Green);
+                            currentState = RegularModeState.Green;
                             break;
                         case TurnRed:
-                            currentState = RegulerModeState.Red;
+                            currentState = RegularModeState.Red;
                     }
                     break;
                 case Green:
-                    event = (WalkersLightEvent) eventListener.waitEvent();
+                    event = (WalkersLightEvent) eventReciver.waitEvent();
                     if (event == WalkersLightEvent.TurnRed) {
-                        currentState = RegulerModeState.Red;
-                        setLight(1, Color.RED);
-                        setLight(2, Color.LIGHT_GRAY);
+                        currentState = RegularModeState.Red;
+                        setLight(LightMode.Red);
                     }
                     break;
             }
@@ -86,15 +84,30 @@ class WalkersLight extends Thread {
     }
 
     public void sendEvent(WalkersLightEvent event) {
-        eventListener.sendEvent(event);
+        eventReciver.sendEvent(event);
     }
 
-    public void setLight(int place, Color color) {
-        streetLight.colorLight[place - 1] = color;
+    public void setLight(LightMode mode) {
+        switch (mode) {
+            case Red:
+                streetLight.colorLight[0] = Color.RED;
+                streetLight.colorLight[1] = Color.GRAY;
+                break;
+            case Green:
+                streetLight.colorLight[0] = Color.GRAY;
+                streetLight.colorLight[1] = Color.GREEN;
+                break;
+            case Blank:
+                streetLight.colorLight[0] = Color.GRAY;
+                streetLight.colorLight[1] = Color.GRAY;
+                break;
+        }
         panel.repaint();
     }
 
-    enum RegulerModeState {Green, Red, Temp}
+    enum RegularModeState {Green, Red, Temp}
 
     enum ExternalState {RegularMode, ShabatMode}
+
+    enum LightMode {Red, Green, Blank}
 }

@@ -23,10 +23,11 @@ public class CarsMaker extends Thread {
 
     public void run() {
         try {
+            //noinspection InfiniteLoopStatement
             while (true) {
                 sleep(300);
                 if (!myRamzor.shouldCarsStop()) {
-                    new CarMooving(myPanel, myRamzor, key);
+                    new CarMoving(myPanel, myRamzor, key);
                 }
 
             }

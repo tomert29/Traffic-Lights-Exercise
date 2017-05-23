@@ -10,19 +10,19 @@ import javax.swing.JPanel;
  * @author �����
  */
 
-public class CarMooving extends Thread {
+public class CarMoving extends Thread {
     JLabel myLabel;
     JPanel myPanel;
     int x, dx;
     int y, dy;
     ImageIcon imageIcon;
     boolean first2 = true;
-    private CarsLight myRamzor;
+    private CarsLight myLight;
     private int key;
 
-    public CarMooving(JPanel myPanel, CarsLight myRamzor, int key) {
+    public CarMoving(JPanel myPanel, CarsLight myLight, int key) {
         this.myPanel = myPanel;
-        this.myRamzor = myRamzor;
+        this.myLight = myLight;
         this.key = key;
         setCarLocationAndMooving();
         imageIcon = getImageIcon();
@@ -78,7 +78,7 @@ public class CarMooving extends Thread {
         myLabel.setBounds(x, y, imageIcon.getIconWidth(), imageIcon.getIconHeight());
 
         while (!finish()) {
-            if (myRamzor.shouldCarsStop() && toStop())
+            if (myLight.shouldCarsStop() && toStop())
                 ;
             else {
                 x += dx;

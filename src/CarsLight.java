@@ -21,31 +21,37 @@ public class CarsLight extends Thread {
     private boolean carsShouldStop = true;
 
 
-    public CarsLight(StreetLight streetLight, JPanel panel, int key, List<WalkersLight> dependentWalkersLights) {
+    public CarsLight(String name, StreetLight streetLight, JPanel panel, int key, List<WalkersLight> dependentWalkersLights) {
+        super(name);
         this.streetLight = streetLight;
         this.panel = panel;
         this.dependentWalkersLights = dependentWalkersLights;
+
 //		new CarsMaker(panel,this,key);
-        start();
     }
 
-    public CarsLight(StreetLight streetLight, JPanel panel, int key) {
-        this(streetLight, panel, key, new ArrayList<WalkersLight>());
+
+    public CarsLight(String name, StreetLight streetLight, JPanel panel, int key) {
+        this(name, streetLight, panel, key, new ArrayList<WalkersLight>());
     }
 
     /**
      * runs the statechart associated with the Cars' Light object
      */
     public void run() {
-        ExternalState state = ExternalState.ShabatMode;
+        for (WalkersLight WL : dependentWalkersLights) {
+            WL.start();
+        }
+        ExternalState state = ExternalState.RegularMode;
+        //noinspection InfiniteLoopStatement
         while (true) {
             switch (state) {
                 case ShabatMode:
-                    runShabatMode(Arrays.asList(CarsEvent.RegularMode));
+                    runShabatMode(Collections.singletonList(CarsEvent.RegularMode));
                     state = ExternalState.RegularMode;
                     break;
                 case RegularMode:
-                    startRegularMode(Arrays.asList(CarsEvent.ShabatMode));
+                    startRegularMode(Collections.singletonList(CarsEvent.ShabatMode));
                     state = ExternalState.ShabatMode;
                     break;
             }
@@ -55,7 +61,7 @@ public class CarsLight extends Thread {
 
     }
 
-
+//region sub-statecharts functions
     /**
      * the function runs the sub-statechart of the state 'regular mode'
      *
@@ -71,7 +77,7 @@ public class CarsLight extends Thread {
                 case Green:
                     temp = new ArrayList<>(exitEvents);
                     temp.add(CarsEvent.TurnRed);
-                    event = runRedState(temp);
+                    event = runGreenState(temp);
                     if (event == CarsEvent.TurnRed) {
                         state = RegularSubState.Red;
                     }
@@ -79,7 +85,7 @@ public class CarsLight extends Thread {
                 case Red:
                     temp = new ArrayList<>(exitEvents);
                     temp.add(CarsEvent.TurnGreen);
-                    event = runGreenState(temp);
+                    event = runRedState(temp);
                     if (event == CarsEvent.TurnGreen) {
                         state = RegularSubState.Green;
                     }
@@ -98,10 +104,17 @@ public class CarsLight extends Thread {
     private CarsEvent runShabatMode(List<CarsEvent> exitEvents) {
         CarsEvent event = null;
         Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                sendEvent(CarsEvent.BlinkOnTimeout);
+            }
+        }, 1000);
         ShabatSubState state = ShabatSubState.BlinkOn;
         for (WalkersLight WL : dependentWalkersLights) {
             WL.sendEvent(WalkersLightEvent.ShabatMode);
         }
+
         setLight(LightMode.Orange);
         do {
             switch (state) {
@@ -219,7 +232,7 @@ public class CarsLight extends Thread {
         } while (!exitEvents.contains(event));
         return event;
     }
-
+//endregion
     /**
      * sends event to the current instance's statechart
      * @param event - the event to send to the statechart

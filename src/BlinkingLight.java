@@ -15,11 +15,11 @@ class BlinkingLight extends Thread {
     public BlinkingLight(StreetLight streetLight, JPanel panel) {
         this.streetLight = streetLight;
         this.panel = panel;
-        start();
     }
 
     public void run() {
         State state = State.Gray;
+        //noinspection InfiniteLoopStatement
         while (true) {
             switch (state) {
                 case Gray:
