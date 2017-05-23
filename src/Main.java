@@ -82,10 +82,15 @@ public class Main {
             butt[i].addActionListener(myListener);
             tlf.myPanel.add(butt[i]);
         }
+        //4
         butt[0].setBounds(620, 30, 18, 18);
+        //5
         butt[1].setBounds(620, 218, 18, 18);
+        //6
         butt[2].setBounds(620, 267, 18, 18);
+        //7
         butt[3].setBounds(620, 447, 18, 18);
+        //etc
         butt[4].setBounds(566, 495, 18, 18);
         butt[5].setBounds(162, 608, 18, 18);
         butt[6].setBounds(213, 495, 18, 18);
@@ -97,7 +102,7 @@ public class Main {
 
         butt[12] = new JRadioButton();
         butt[12].setName(Integer.toString(16));
-        butt[12].setBounds(50, 30, 55, 20);
+        butt[12].setBounds(50, 30, 155, 20);
         butt[12].setText("Shabat");
         butt[12].setOpaque(false);
         butt[12].addActionListener(myListener);

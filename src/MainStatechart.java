@@ -5,6 +5,7 @@ import java.util.*;
  */
 public class MainStatechart extends Thread {
 
+    private static MainStatechart lastInstance;
     final long DELAY = 10000;
     List<WalkersLight> independentLights;
     Event64 eventReciver = new Event64();
@@ -17,7 +18,26 @@ public class MainStatechart extends Thread {
         FarbsteinLight = farbsteinLight;
         this.independentLights = independentLights;
         this.KNSideLight = KNSideLight;
+        lastInstance = this;
+    }
 
+    public static void buttonPressAlert(int buttonKey) {
+        MainSCEvent event = null;
+        //TODO take care of all cases and implement the events in the statechart too
+        switch (buttonKey) {
+            case 4:
+            case 5:
+                event = MainSCEvent.YAPress;
+                break;
+            case 12:
+            case 13:
+            case 6:
+            case 7:
+                event = MainSCEvent.KNPress;
+                break;
+
+        }
+        lastInstance.sendEvent(event);
     }
 
     public void run() {
@@ -63,7 +83,6 @@ public class MainStatechart extends Thread {
     }
 
     public void sendEvent(MainSCEvent event) {
-        System.out.println("Event run" + event.toString());
         eventReciver.sendEvent(event);
     }
 

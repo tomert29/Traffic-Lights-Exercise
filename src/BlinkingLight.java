@@ -10,6 +10,7 @@ import javax.swing.JPanel;
  * @author �����
  */
 class BlinkingLight extends Thread {
+    private final long Delay = 700;
     StreetLight streetLight;
     JPanel panel;
     public BlinkingLight(StreetLight streetLight, JPanel panel) {
@@ -18,25 +19,27 @@ class BlinkingLight extends Thread {
     }
 
     public void run() {
-        State state = State.Gray;
+        State state = State.Blank;
         //noinspection InfiniteLoopStatement
         while (true) {
             switch (state) {
-                case Gray:
+                case Blank:
                     try {
-                        sleep(1000);
+                        sleep(Delay);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     setLight(1, Color.ORANGE);
+                    state = State.Orange;
                     break;
                 case Orange:
                     try {
-                        sleep(1000);
+                        sleep(Delay);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     setLight(1, Color.GRAY);
+                    state = State.Blank;
                     break;
             }
         }
@@ -48,5 +51,5 @@ class BlinkingLight extends Thread {
         panel.repaint();
     }
 
-    enum State {Orange, Gray}
+    enum State {Orange, Blank}
 }

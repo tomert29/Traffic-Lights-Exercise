@@ -14,7 +14,8 @@ import javax.swing.JRadioButton;
 public class MyActionListener implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         JRadioButton butt = (JRadioButton) e.getSource();
-        System.out.println(butt.getName());
+        MainStatechart.buttonPressAlert(Integer.parseInt(butt.getName()));
+        System.out.println("Button press " + butt.getName());
         //		butt.setEnabled(false);
         //		butt.setSelected(false);
     }
