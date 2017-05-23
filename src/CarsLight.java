@@ -16,16 +16,15 @@ import javax.swing.JPanel;
 public class CarsLight extends Thread {
     StreetLight streetLight;
     JPanel panel;
-    List<WalkersLight> WalkersLights;
+    List<WalkersLight> dependentWalkersLights;
     Event64 eventReceiver = new Event64();
     private boolean carsShouldStop = true;
 
 
-
-    public CarsLight(StreetLight streetLight, JPanel panel, int key, List<WalkersLight> WalkersLights) {
+    public CarsLight(StreetLight streetLight, JPanel panel, int key, List<WalkersLight> dependentWalkersLights) {
         this.streetLight = streetLight;
         this.panel = panel;
-        this.WalkersLights = WalkersLights;
+        this.dependentWalkersLights = dependentWalkersLights;
 //		new CarsMaker(panel,this,key);
         start();
     }
@@ -47,6 +46,7 @@ public class CarsLight extends Thread {
                     break;
                 case RegularMode:
                     startRegularMode(Arrays.asList(CarsEvent.ShabatMode));
+                    state = ExternalState.ShabatMode;
                     break;
             }
 
@@ -99,9 +99,8 @@ public class CarsLight extends Thread {
         CarsEvent event = null;
         Timer timer = new Timer();
         ShabatSubState state = ShabatSubState.BlinkOn;
-        for (WalkersLight WL : WalkersLights) {
-            WL.setLight(1, Color.GRAY);
-            WL.setLight(2, Color.GRAY);
+        for (WalkersLight WL : dependentWalkersLights) {
+            WL.sendEvent(WalkersLightEvent.ShabatMode);
         }
         setLight(LightMode.Orange);
         do {
@@ -163,7 +162,7 @@ public class CarsLight extends Thread {
                     event = (CarsEvent) eventReceiver.waitEvent();
                     if (event == CarsEvent.RedStTimeout) {
                         setLight(LightMode.Red);
-                        for (WalkersLight WL : WalkersLights) {
+                        for (WalkersLight WL : dependentWalkersLights) {
                             WL.sendEvent(WalkersLightEvent.TurnGreen);
                         }
                         subState = RedSubState.Red;
@@ -180,7 +179,7 @@ public class CarsLight extends Thread {
     private CarsEvent runGreenState(List<CarsEvent> exitEvents) {
         CarsEvent event = null;
         Timer timer = new Timer();
-        for (WalkersLight WL : WalkersLights) {
+        for (WalkersLight WL : dependentWalkersLights) {
             WL.sendEvent(WalkersLightEvent.TurnRed);
         }
         timer.schedule(new TimerTask() {
