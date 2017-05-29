@@ -7,7 +7,7 @@ import javax.swing.JPanel;
  */
 
 /**
- * @author �����
+ * @author �����  f
  */
 class BlinkingLight extends Thread {
     private final long Delay = 700;
